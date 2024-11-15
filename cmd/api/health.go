@@ -17,11 +17,10 @@ func (app *application) healthHandler(w http.ResponseWriter, r *http.Request) {
 		Version:     version,
 	}
 
-	err := app.writeJson(w, http.StatusOK, health, nil)
+	err := app.writeJson(w, http.StatusOK, envelope{"health": health}, nil)
 
 	if err != nil {
-		app.logger.Error("encountered an error", "error", err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		app.serverErrorResponse(w, r, err)
 	}
 
 }

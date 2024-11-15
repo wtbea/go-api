@@ -18,8 +18,7 @@ func (app *application) addCharacterHandler(w http.ResponseWriter, r *http.Reque
 func (app *application) getCharacterHandler(w http.ResponseWriter, r *http.Request) {
 	id, err := app.readIdParam(r)
 	if err != nil {
-		http.NotFound(w, r)
-		return
+		app.notFoundResponse(w, r)
 	}
 
 	character := data.Character{
@@ -32,7 +31,6 @@ func (app *application) getCharacterHandler(w http.ResponseWriter, r *http.Reque
 
 	err = app.writeJson(w, http.StatusOK, envelope{"character": character}, nil)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+		app.serverErrorResponse(w, r, err)
 	}
 }

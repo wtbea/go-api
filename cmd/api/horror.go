@@ -30,7 +30,7 @@ func (app *application) getCharacterHandler(w http.ResponseWriter, r *http.Reque
 		FirstAppearance: "The 9th Circle",
 	}
 
-	err = app.writeJson(w, http.StatusOK, character, nil)
+	err = app.writeJson(w, http.StatusOK, envelope{"character": character}, nil)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

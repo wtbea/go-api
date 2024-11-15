@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	"net/http"
+
+	"follow-along.whathebea.com/internal/data"
 )
 
 /*
@@ -19,5 +21,18 @@ func (app *application) getCharacterHandler(w http.ResponseWriter, r *http.Reque
 		http.NotFound(w, r)
 		return
 	}
-	fmt.Fprintf(w, "show the details of movie %d\n", id)
+
+	character := data.Character{
+		ID:              id,
+		Name:            "Art the Clown",
+		Age:             "unknown",
+		HorrorGenre:     "Slasher",
+		FirstAppearance: "The 9th Circle",
+	}
+
+	err = app.writeJson(w, http.StatusOK, character, nil)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 }

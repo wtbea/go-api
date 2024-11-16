@@ -16,5 +16,5 @@ func (app *application) routes() http.Handler {
 	r.HandlerFunc(http.MethodPost, "/v1/character", app.addCharacterHandler)
 	r.HandlerFunc(http.MethodGet, "/v1/character/:id", app.getCharacterHandler)
 
-	return r
+	return app.recoverPanic(r)
 }

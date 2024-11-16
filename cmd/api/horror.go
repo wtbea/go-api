@@ -12,7 +12,20 @@ Handlers for managing horror movie characters
 */
 
 func (app *application) addCharacterHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintln(w, "add a character")
+	var input struct {
+		Name            string `json:"name"`
+		Age             string `json:"age"`
+		HorrorGenre     string `json:"horrorGenre"`
+		FirstAppearance string `json:"firstAppearance"`
+	}
+
+	err := app.readJSON(w, r, &input)
+	if err != nil {
+		app.badRequestResponse(w, r, err)
+		return
+	}
+
+	fmt.Fprintf(w, "%+v\n", input)
 }
 
 func (app *application) getCharacterHandler(w http.ResponseWriter, r *http.Request) {

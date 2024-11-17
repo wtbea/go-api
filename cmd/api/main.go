@@ -10,6 +10,7 @@ import (
 	"os"
 	"time"
 
+	"follow-along.whathebea.com/internal/data"
 	_ "github.com/lib/pq"
 )
 
@@ -29,6 +30,7 @@ type config struct {
 type application struct {
 	config config
 	logger *slog.Logger
+	models data.Models
 }
 
 func main() {
@@ -53,9 +55,12 @@ func main() {
 	}
 
 	defer db.Close()
+	logger.Info("database connection pool established")
+
 	app := &application{
 		config: cfg,
 		logger: logger,
+		models: data.NewModels(db),
 	}
 
 	srv := &http.Server{

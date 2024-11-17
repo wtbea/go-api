@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 
@@ -39,21 +40,40 @@ func (app *application) addCharacterHandler(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	fmt.Fprintf(w, "%+v\n", input)
+	err = app.models.Characters.Insert(&character)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+
+	headers := make(http.Header)
+	headers.Set("Location", fmt.Sprintf("/v1/characters/%d", character.ID))
+
+	err = app.writeJson(w, http.StatusCreated, envelope{"character": character}, headers)
+
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+	}
+
 }
 
 func (app *application) getCharacterHandler(w http.ResponseWriter, r *http.Request) {
 	id, err := app.readIdParam(r)
+
 	if err != nil {
 		app.notFoundResponse(w, r)
 	}
 
-	character := data.Character{
-		ID:              id,
-		Name:            "Art the Clown",
-		Age:             "unknown",
-		HorrorGenre:     "Slasher",
-		FirstAppearance: "The 9th Circle",
+	character, err := app.models.Characters.Get(id)
+
+	if err != nil {
+		switch {
+		case errors.Is(err, data.ErrRecordNotFound):
+			app.notFoundResponse(w, r)
+		default:
+			app.serverErrorResponse(w, r, err)
+		}
+		return
 	}
 
 	err = app.writeJson(w, http.StatusOK, envelope{"character": character}, nil)

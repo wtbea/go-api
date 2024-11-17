@@ -2,6 +2,7 @@ package data
 
 import (
 	"database/sql"
+	"errors"
 
 	"follow-along.whathebea.com/internal/validator"
 )
@@ -26,11 +27,34 @@ type CharacterModel struct {
 }
 
 func (c CharacterModel) Insert(character *Character) error {
-	return nil
+	query := `INSERT INTO characters (name, age, horror_genre, first_appearance) 
+	VALUES ($1, $2, $3, $4) 
+	RETURNING id`
+
+	args := []any{character.Name, character.Age, character.HorrorGenre, character.FirstAppearance}
+
+	return c.DB.QueryRow(query, args...).Scan(&character.ID)
 }
 
-func (c CharacterModel) Get(id int) (*Character, error) {
-	return nil, nil
+func (c CharacterModel) Get(id int64) (*Character, error) {
+	query := `SELECT id, name, age, horror_genre, first_appearance FROM characters WHERE id = $1`
+
+	row := c.DB.QueryRow(query, id)
+
+	var character Character
+
+	err := row.Scan(&character.ID, &character.Name, &character.Age, &character.HorrorGenre, &character.FirstAppearance)
+
+	if err != nil {
+		switch {
+		case errors.Is(err, sql.ErrNoRows):
+			return nil, ErrRecordNotFound
+		default:
+			return nil, err
+		}
+	}
+
+	return &character, nil
 }
 
 func (c CharacterModel) Update(character *Character) error {

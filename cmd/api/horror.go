@@ -81,3 +81,65 @@ func (app *application) getCharacterHandler(w http.ResponseWriter, r *http.Reque
 		app.serverErrorResponse(w, r, err)
 	}
 }
+
+func (app *application) updateCharacterHandler(w http.ResponseWriter, r *http.Request) {
+	var input struct {
+		Name            string `json:"name"`
+		Age             string `json:"age"`
+		HorrorGenre     string `json:"horrorGenre"`
+		FirstAppearance string `json:"firstAppearance"`
+	}
+
+	id, err := app.readIdParam(r)
+
+	if err != nil {
+		app.notFoundResponse(w, r)
+		return
+	}
+
+	character, err := app.models.Characters.Get(id)
+
+	if err != nil {
+		switch {
+		case errors.Is(err, data.ErrRecordNotFound):
+			app.notFoundResponse(w, r)
+		default:
+			app.serverErrorResponse(w, r, err)
+		}
+		return
+	}
+
+	err = app.readJSON(w, r, &input)
+
+	if err != nil {
+		app.badRequestResponse(w, r, err)
+	}
+
+	character.Name = input.Name
+	character.Age = input.Age
+	character.HorrorGenre = input.HorrorGenre
+	character.FirstAppearance = input.FirstAppearance
+
+	v := validator.New()
+
+	if data.ValidateCharacter(v, character); !v.Valid() {
+		app.failedValidationResponse(w, r, v.Errors)
+		return
+	}
+
+	err = app.models.Characters.Update(character)
+
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+
+	err = app.writeJson(w, http.StatusOK, envelope{"character": character}, nil)
+
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+
+	return
+}

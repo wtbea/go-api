@@ -58,6 +58,16 @@ func (c CharacterModel) Get(id int64) (*Character, error) {
 }
 
 func (c CharacterModel) Update(character *Character) error {
+	query := `UPDATE characters SET name = $1, age = $2, horror_genre = $3, first_appearance = $4 WHERE id = $5`
+
+	args := []any{character.Name, character.Age, character.HorrorGenre, character.FirstAppearance, character.ID}
+
+	_, err := c.DB.Exec(query, args...)
+
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 

@@ -5,12 +5,12 @@ import (
 	"net/http"
 
 	"follow-along.whathebea.com/internal/data"
+	"follow-along.whathebea.com/internal/validator"
 )
 
 /*
 Handlers for managing horror movie characters
 */
-
 func (app *application) addCharacterHandler(w http.ResponseWriter, r *http.Request) {
 	var input struct {
 		Name            string `json:"name"`
@@ -22,6 +22,20 @@ func (app *application) addCharacterHandler(w http.ResponseWriter, r *http.Reque
 	err := app.readJSON(w, r, &input)
 	if err != nil {
 		app.badRequestResponse(w, r, err)
+		return
+	}
+
+	character := data.Character{
+		Name:            input.Name,
+		Age:             input.Age,
+		HorrorGenre:     input.HorrorGenre,
+		FirstAppearance: input.FirstAppearance,
+	}
+
+	v := validator.New()
+
+	if data.ValidateCharacter(v, &character); !v.Valid() {
+		app.failedValidationResponse(w, r, v.Errors)
 		return
 	}
 

@@ -140,6 +140,27 @@ func (app *application) updateCharacterHandler(w http.ResponseWriter, r *http.Re
 		app.serverErrorResponse(w, r, err)
 		return
 	}
+}
 
-	return
+func (app *application) deleteCharacterHandler(w http.ResponseWriter, r *http.Request) {
+	id, err := app.readIdParam(r)
+
+	if err != nil {
+		app.notFoundResponse(w, r)
+		return
+	}
+
+	err = app.models.Characters.Delete(id)
+
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+
+	err = app.writeJson(w, http.StatusOK, envelope{"message": "character deleted"}, nil)
+
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
 }

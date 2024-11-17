@@ -64,13 +64,13 @@ func (c CharacterModel) Update(character *Character) error {
 
 	_, err := c.DB.Exec(query, args...)
 
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return err
 }
 
-func (c CharacterModel) Delete(id int) error {
-	return nil
+func (c CharacterModel) Delete(id int64) error {
+	query := `DELETE FROM characters WHERE id = $1`
+
+	_, err := c.DB.Exec(query, id)
+
+	return err
 }
